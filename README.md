@@ -62,6 +62,7 @@ flowchart TD
         DP -->|RFC 8484 DoH / HTTPS| Nginx
         Nginx -->|Token Validated| AGH
         Nginx -->|Invalid / Scanner Probe| Reject["404 Not Found"]
+    end
 ```
 
 ---
