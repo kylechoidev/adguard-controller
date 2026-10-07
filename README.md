@@ -79,7 +79,7 @@ sudo apt install -y python3 curl dnscrypt-proxy
 ### 2. Installation
 Clone the repository and run the installer:
 ```bash
-git clone https://github.com/YOUR_USERNAME/adguard-controller.git
+git clone https://github.com/kylechoidev/adguard-controller.git
 cd adguard-controller
 ./install.sh
 ```
