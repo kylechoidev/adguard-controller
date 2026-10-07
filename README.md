@@ -79,6 +79,9 @@ While designed with **AdGuard Home** in mind, the controller speaks standard **R
 | **Mullvad DNS** | Public ad-blocking & tracker-blocking DoH | ✅ Yes |
 | **Quad9 / Cloudflare** | Threat intelligence & privacy-focused upstream | ✅ Yes |
 
+> [!TIP]
+> **Thin Client Design:** The controller does **not** download or evaluate blocklists locally on your laptop. All 180,000+ domain filtering rules are evaluated server-side and automatically updated on your upstream resolver (e.g. AdGuard Home's built-in 24h auto-updater). This keeps the local laptop daemon ultralight (~9MB RAM, 0% CPU) with zero latency added to local page loads.
+
 ---
 
 ## 🚀 Quick Start
