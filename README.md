@@ -62,8 +62,22 @@ flowchart TD
         DP -->|RFC 8484 DoH / HTTPS| Nginx
         Nginx -->|Token Validated| AGH
         Nginx -->|Invalid / Scanner Probe| Reject["404 Not Found"]
-    end
 ```
+
+---
+
+## 🌐 Universal Resolver Compatibility
+
+While designed with **AdGuard Home** in mind, the controller speaks standard **RFC 8484 DNS-over-HTTPS (DoH)**. Ad-blocking and tracking filters are evaluated server-side by whichever resolver you configure:
+
+| Resolver Backend | Filtering Mechanism | Supported |
+|---|---|:---:|
+| **AdGuard Home** (Self-Hosted VPS) | Official **AdGuard DNS Filter** (178,000+ rules), parental controls, custom regex rules | ✅ Native |
+| **Pi-hole** (Self-Hosted + DoH) | Gravity blocklists (StevenBlack, Firebog, etc.) | ✅ Yes |
+| **NextDNS** (Cloud) | Cloud profiles with customizable blocklists & analytics | ✅ Yes |
+| **Control D** | Multi-profile ad, tracker, & malware blocking | ✅ Yes |
+| **Mullvad DNS** | Public ad-blocking & tracker-blocking DoH | ✅ Yes |
+| **Quad9 / Cloudflare** | Threat intelligence & privacy-focused upstream | ✅ Yes |
 
 ---
 
