@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdGuard DNS Controller</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="/adguard.png">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="brand">
+        <div class="logo-shield">🛡️</div>
+        <div>
+          <h1>AdGuard DNS Controller</h1>
+          <p class="subtitle">Gentle laptop DNS switcher with safe fallback & watchdog</p>
+        </div>
+      </div>
+      <button class="btn-icon-header" onclick="openSettings()" title="Configure Controller Settings">⚙️</button>
+    </header>
+
+    <main class="card main-card">
+      <div class="status-header">
+        <div class="status-indicator">
+          <span class="status-dot" id="status-dot"></span>
+          <div>
+            <h2 id="status-title">Checking connection...</h2>
+            <p id="status-desc" class="status-desc">Querying network interface state...</p>
+          </div>
+        </div>
+        <div class="badge" id="status-badge">Detecting...</div>
+      </div>
+
+      <div class="switch-container">
+        <button id="toggle-btn" class="btn btn-primary" onclick="toggleDNS()">
+          <span id="btn-icon">⚡</span>
+          <span id="btn-text">Enable VPS Blocker</span>
+        </button>
+      </div>
+
+      <div class="details-grid">
+        <div class="detail-item">
+          <span class="detail-label">Active Network Interface</span>
+          <span class="detail-val" id="val-interface">—</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Current Active DNS</span>
+          <span class="detail-val" id="val-dns">—</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">VPS Target</span>
+          <span class="detail-val" id="val-vps-target">—</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Safety Fallback</span>
+          <span class="detail-val" id="val-fallback">1.1.1.1 (Instant Failover)</span>
+        </div>
+      </div>
+
+      <div class="controls-row">
+        <button class="btn btn-secondary" onclick="runProbeTest()">
+          <span>🔍</span> Test VPS Connection
+        </button>
+        <button class="btn btn-danger" onclick="emergencyReset()">
+          <span>↺</span> Emergency Reset to Default
+        </button>
+      </div>
+      <div id="action-message" class="action-message hidden"></div>
+    </main>
+
+    <section class="card log-card">
+      <div class="log-header">
+        <h3>Watchdog & Event Log</h3>
+        <span class="pulse-indicator">● Live Heartbeat</span>
+      </div>
+      <div class="log-list" id="log-list">
+        <div class="log-entry">Awaiting backend connection...</div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>Running locally on Linux Mint • Safe 3-Stage Atomic Fallback • Autonomous Watchdog Active</p>
+    </footer>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal-overlay hidden" onclick="handleModalClick(event)">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⚙️ Controller Settings</h3>
+        <button class="modal-close" onclick="closeSettings()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-hint">Configure your remote AdGuard Home DNS-over-HTTPS (DoH) endpoint. Token authentication is fully supported.</p>
+        <div class="form-group">
+          <label for="cfg-doh-url">AdGuard Home DoH URL</label>
+          <input type="text" id="cfg-doh-url" class="form-input" placeholder="https://adguard.example.com/dns-query/YOUR_TOKEN">
+          <span class="input-help">Format: <code>https://&lt;domain&gt;/dns-query/&lt;client-token&gt;</code></span>
+        </div>
+        <div id="modal-msg" class="action-message hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSettings()">Save Configuration</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+# Bytecode and runtime artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+
+# User configurations and credentials (never commit real tokens or IPs)
+config.json
+.env
+*.env
+*.bak
+*.backup
+
+# Logs and runtime databases
+*.log
+*.sqlite
+*.sqlite3
+
+# Operating System & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Virtual Environments
+.venv/
+venv/
+env/

@@ -1,0 +1,230 @@
+#!/usr/bin/env bash
+# ==============================================================================
+# AdGuard Controller: Safe DNS CLI Client
+# Interacts with the local AdGuard Controller daemon (127.0.0.1:5350)
+# ==============================================================================
+
+set -euo pipefail
+
+API_URL="${ADGUARD_CONTROLLER_API:-http://127.0.0.1:5350/api}"
+
+notify() {
+  local title="$1"
+  local msg="$2"
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send -i adguard -a "AdGuard Controller" "$title" "$msg" 2>/dev/null || \
+    notify-send -a "AdGuard Controller" "$title" "$msg" 2>/dev/null || true
+  fi
+}
+
+check_daemon() {
+  if ! curl -s --connect-timeout 2 "${API_URL}/status" >/dev/null 2>&1; then
+    echo "❌ Error: AdGuard Controller daemon is not responding on ${API_URL}." >&2
+    echo "Tip: Run 'systemctl --user start adguard-controller' or start it via install.sh" >&2
+    exit 1
+  fi
+}
+
+cmd_status() {
+  check_daemon
+  local res
+  res=$(curl -s "${API_URL}/status")
+
+  python3 -c "
+import sys, json
+try:
+    data = json.loads('''$res''')
+    state = data.get('state', 'UNKNOWN')
+    iface = data.get('interface', 'None')
+    target = data.get('vps_target', 'Not Configured')
+    configured = data.get('is_configured', False)
+
+    print('🛡️  AdGuard DNS Controller')
+    print('──────────────────────────────────────────────')
+    print(f'Interface:       {iface}')
+    print(f'Target:          {target}')
+
+    if not configured:
+        print('Status:          ⚠️ NOT CONFIGURED (Run: adguard-dns config <URL>)')
+    elif state == 'ACTIVE':
+        print('Status:          🛡️  ACTIVE (Protected by AdGuard DoH)')
+    elif state == 'VPN_ACTIVE':
+        print('Status:          🔒 VPN ACTIVE (Routing managed by VPN tunnel)')
+    else:
+        print('Status:          ⚪ INACTIVE (Using standard network DHCP)')
+except Exception as e:
+    print('Error parsing status:', e)
+    sys.exit(1)
+"
+}
+
+cmd_toggle() {
+  check_daemon
+  local res
+  res=$(curl -s -X POST --connect-timeout 8 "${API_URL}/toggle")
+
+  python3 -c "
+import sys, json
+try:
+    data = json.loads('''$res''')
+    ok = data.get('ok', False)
+    msg = data.get('message', 'No message')
+    if ok:
+        print(f'✓ {msg}')
+    else:
+        print(f'❌ Failed: {msg}', file=sys.stderr)
+        sys.exit(1)
+except Exception as e:
+    print('Error:', e, file=sys.stderr)
+    sys.exit(1)
+"
+  notify "AdGuard DNS" "Toggled DNS status"
+}
+
+cmd_enable() {
+  check_daemon
+  local res
+  res=$(curl -s -X POST -H "Content-Type: application/json" -d '{"action":"enable"}' --connect-timeout 8 "${API_URL}/toggle")
+
+  python3 -c "
+import sys, json
+try:
+    data = json.loads('''$res''')
+    ok = data.get('ok', False)
+    msg = data.get('message', 'No message')
+    if ok:
+        print(f'✓ {msg}')
+    else:
+        print(f'❌ Failed: {msg}', file=sys.stderr)
+        sys.exit(1)
+except Exception as e:
+    print('Error:', e, file=sys.stderr)
+    sys.exit(1)
+"
+  notify "AdGuard DNS: ENABLED 🛡️" "AdGuard DoH Protection Active"
+}
+
+cmd_disable() {
+  check_daemon
+  local res
+  res=$(curl -s -X POST -H "Content-Type: application/json" -d '{"action":"disable"}' --connect-timeout 8 "${API_URL}/toggle")
+
+  python3 -c "
+import sys, json
+try:
+    data = json.loads('''$res''')
+    ok = data.get('ok', False)
+    msg = data.get('message', 'No message')
+    if ok:
+        print(f'✓ {msg}')
+    else:
+        print(f'❌ Failed: {msg}', file=sys.stderr)
+        sys.exit(1)
+except Exception as e:
+    print('Error:', e, file=sys.stderr)
+    sys.exit(1)
+"
+  notify "AdGuard DNS: DISABLED ⚪" "Standard DHCP Restored"
+}
+
+cmd_test() {
+  check_daemon
+  echo "🔍 Probing remote AdGuard resolver..."
+  local res
+  res=$(curl -s -X POST --connect-timeout 8 "${API_URL}/test")
+
+  python3 -c "
+import sys, json
+try:
+    data = json.loads('''$res''')
+    ok = data.get('ok', False)
+    msg = data.get('message', '')
+    lat = data.get('latency_ms')
+    if ok:
+        print(f'✓ Probe Successful: {msg}')
+    else:
+        print(f'❌ Probe Failed: {msg}', file=sys.stderr)
+        sys.exit(1)
+except Exception as e:
+    print('Error:', e, file=sys.stderr)
+    sys.exit(1)
+"
+}
+
+cmd_reset() {
+  check_daemon
+  local res
+  res=$(curl -s -X POST --connect-timeout 5 "${API_URL}/reset")
+
+  python3 -c "
+import sys, json
+try:
+    data = json.loads('''$res''')
+    msg = data.get('message', 'Reset complete')
+    print(f'✓ Emergency Reset: {msg}')
+except Exception as e:
+    print('Error:', e)
+"
+  notify "AdGuard Reset" "Network restored to standard DHCP"
+}
+
+cmd_config() {
+  check_daemon
+  local url="${1:-}"
+  if [ -z "$url" ]; then
+    echo "Usage: adguard-dns config <doh_url>"
+    echo "Example: adguard-dns config 'https://adguard.example.com/dns-query/YOUR_TOKEN'"
+    exit 1
+  fi
+
+  local res
+  res=$(curl -s -X POST -H "Content-Type: application/json" -d "{\"doh_url\":\"$url\"}" "${API_URL}/config")
+
+  python3 -c "
+import sys, json
+try:
+    data = json.loads('''$res''')
+    ok = data.get('ok', False)
+    msg = data.get('message', '')
+    if ok:
+        print(f'✓ {msg}')
+    else:
+        print(f'❌ {msg}', file=sys.stderr)
+        sys.exit(1)
+except Exception as e:
+    print('Error:', e, file=sys.stderr)
+    sys.exit(1)
+"
+}
+
+case "${1:-status}" in
+  status)
+    cmd_status
+    ;;
+  enable|on|start)
+    cmd_enable
+    ;;
+  disable|off|stop)
+    cmd_disable
+    ;;
+  toggle)
+    cmd_toggle
+    ;;
+  test|probe)
+    cmd_test
+    ;;
+  reset)
+    cmd_reset
+    ;;
+  config|set)
+    shift
+    cmd_config "${1:-}"
+    ;;
+  help|-h|--help)
+    echo "Usage: adguard-dns [status|enable|disable|toggle|test|reset|config <url>]"
+    ;;
+  *)
+    echo "Unknown command: $1. Run 'adguard-dns help' for available commands."
+    exit 1
+    ;;
+esac

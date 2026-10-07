@@ -1,0 +1,9 @@
+{
+  "doh_url": "https://adguard.example.com/dns-query/YOUR_SECRET_TOKEN",
+  "local_stub": "127.0.2.1",
+  "fallback_dns": "1.1.1.1",
+  "port": 5350,
+  "host": "127.0.0.1",
+  "watchdog_interval_sec": 10,
+  "watchdog_fail_threshold": 2
+}
