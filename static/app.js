@@ -185,11 +185,12 @@ async function openSettings() {
     console.error('Failed to load current config', err);
   }
 
-  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
 }
 
 function closeSettings() {
-  document.getElementById('settings-modal').classList.add('hidden');
+  const modal = document.getElementById('settings-modal');
+  if (modal) modal.style.display = 'none';
 }
 
 function handleModalClick(e) {

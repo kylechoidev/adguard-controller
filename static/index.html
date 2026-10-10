@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AdGuard DNS Controller</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=3">
   <link rel="icon" type="image/png" href="/adguard.png">
 </head>
 <body>
@@ -84,8 +84,8 @@
     </footer>
   </div>
 
-  <!-- Settings Modal -->
-  <div id="settings-modal" class="modal-overlay hidden" onclick="handleModalClick(event)">
+  <!-- Settings Modal (Strict inline display:none to guarantee hidden state on load) -->
+  <div id="settings-modal" class="modal-overlay" style="display: none;" onclick="handleModalClick(event)">
     <div class="modal-card">
       <div class="modal-header">
         <h3>⚙️ Controller Settings</h3>
@@ -107,6 +107,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
