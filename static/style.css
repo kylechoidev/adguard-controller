@@ -345,11 +345,16 @@ h2 {
   bottom: 0;
   background: rgba(15, 20, 28, 0.85);
   backdrop-filter: blur(4px);
-  display: flex;
+  display: none !important;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   padding: 16px;
+}
+
+.modal-overlay.active,
+.modal-overlay.open {
+  display: flex !important;
 }
 
 .modal-card {

@@ -185,12 +185,16 @@ async function openSettings() {
     console.error('Failed to load current config', err);
   }
 
-  modal.style.display = 'flex';
+  modal.style.display = '';  // Clear any inline display:none left by closeSettings
+  modal.classList.add('active');
 }
 
 function closeSettings() {
   const modal = document.getElementById('settings-modal');
-  if (modal) modal.style.display = 'none';
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
 }
 
 function handleModalClick(e) {
